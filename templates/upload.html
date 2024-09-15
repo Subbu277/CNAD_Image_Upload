@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative; /* Add position relative for the loader positioning */
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+        .loader {
+            border: 16px solid #f3f3f3; /* Light grey */
+            border-top: 16px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            position: absolute; /* Position the loader inside the container */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none; /* Initially hidden */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .re-upload {
+            display: none; /* Initially hidden */
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload an Image</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*" required />
+            <button type="submit">Upload</button>
+        </form>
+        <div id="message" class="message"></div>
+        <div id="loader" class="loader"></div>
+        <button id="reUploadButton" class="re-upload">Re-upload Image</button>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const loader = document.getElementById('loader');
+            const messageDiv = document.getElementById('message');
+            const reUploadButton = document.getElementById('reUploadButton');
+
+            // Show the loader
+            loader.style.display = 'block';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+
+                if (response.ok) {
+                    messageDiv.innerHTML = `<p class="success">${result.message}</p>`;
+
+                    // Create and display the image
+                    const img = document.createElement('img');
+                    img.src = result.url;
+                    messageDiv.appendChild(img);
+
+                    // Show the re-upload button
+                    reUploadButton.style.display = 'inline-block';
+                } else {
+                    messageDiv.innerHTML = `<p class="error">${result.error}</p>`;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `<p class="error">An error occurred: ${error.message}</p>`;
+            } finally {
+                // Hide the loader
+                loader.style.display = 'none';
+            }
+        });
+
+        document.getElementById('reUploadButton').addEventListener('click', () => {
+            // Reset the form and hide the image and re-upload button
+            document.getElementById('uploadForm').reset();
+            document.getElementById('message').innerHTML = '';
+            document.getElementById('reUploadButton').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
