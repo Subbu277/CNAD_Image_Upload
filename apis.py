@@ -23,6 +23,8 @@ def upload():
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     bucket_object_name = timestamp+'_'+image.filename
     local_path = os.path.join("tmp", bucket_object_name)
+    print("-------------3 : image path",local_path)
+    print("---------------4 : dir exist or not",os.path.exists(tmp_dir))
     image.save(local_path)
     image.seek(0)
     public_url = upload_file(image, "image_files/"+bucket_object_name)
