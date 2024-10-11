@@ -30,8 +30,10 @@
             flex-direction: column;
             align-items: center;
         }
-        input[type="file"] {
+        input[type="file"],
+        input[type="email"] {
             margin-bottom: 20px;
+            width: 100%;
         }
         button {
             background-color: #007bff;
@@ -84,27 +86,48 @@
             display: none;
             margin-top: 20px;
         }
+        .history {
+            margin-top: 20px;
+        }
+        .history-item {
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Upload an Image</h1>
         <form id="uploadForm" enctype="multipart/form-data">
+            <input type="email" id="email" name="email" placeholder="Enter your email" required />
             <input type="file" name="image" accept="image/*" required />
             <button type="submit">Upload</button>
         </form>
         <div id="message" class="message"></div>
         <div id="loader" class="loader"></div>
         <button id="reUploadButton" class="re-upload">Re-upload Image</button>
+        <button id="viewHistoryButton">View History</button>
+        <div id="history" class="history"></div>
     </div>
 
     <script>
         document.getElementById('uploadForm').addEventListener('submit', async (event) => {
             event.preventDefault();
-            const formData = new FormData(event.target);
+            const emailInput = document.getElementById('email');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const loader = document.getElementById('loader');
             const messageDiv = document.getElementById('message');
             const reUploadButton = document.getElementById('reUploadButton');
+
+            // Validate email
+            if (!emailRegex.test(emailInput.value)) {
+                messageDiv.innerHTML = `<p class="error">Please enter a valid email address.</p>`;
+                return;
+            }
+
+            const formData = new FormData(event.target);
 
             // Show the loader
             loader.style.display = 'block';
@@ -117,16 +140,16 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    messageDiv.innerHTML = `<p class="success">${result.message}</p>`;
+                    messageDiv.innerHTML = `<p class="success">Upload successful!</p>`;
 
                     // Create and display the image
                     const img = document.createElement('img');
-                    img.src = result.url;
+                    img.src = result.result.image_path; // Use the image path returned by the API
                     messageDiv.appendChild(img);
 
-                    // Display the transcription
+                    // Display transcription
                     const transcription = document.createElement('p');
-                    transcription.innerHTML = `<strong>Transcription:</strong> ${result.Transcription}`;
+                    transcription.innerHTML = `<strong>Transcription:</strong> ${result.result.transcript}`;
                     messageDiv.appendChild(transcription);
 
                     // Show the re-upload button
@@ -147,6 +170,48 @@
             document.getElementById('uploadForm').reset();
             document.getElementById('message').innerHTML = '';
             document.getElementById('reUploadButton').style.display = 'none';
+        });
+
+        document.getElementById('viewHistoryButton').addEventListener('click', async () => {
+            const emailInput = document.getElementById('email');
+            const email = emailInput.value;
+
+            if (!email) {
+                alert("Please enter your email first.");
+                return;
+            }
+
+            const historyDiv = document.getElementById('history');
+            historyDiv.innerHTML = ''; // Clear previous history
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
+
+            try {
+                const response = await fetch(`/uploads?email=${encodeURIComponent(email)}`);
+                const result = await response.json();
+
+                if (response.ok) {
+                    if (result.uploads.length === 0) {
+                        historyDiv.innerHTML = `<p>No uploads found for this email.</p>`;
+                    } else {
+                        result.uploads.forEach(record => {
+                            const historyItem = document.createElement('div');
+                            historyItem.className = 'history-item';
+                            historyItem.innerHTML = `
+                                <img src="${record.image_path}" alt="Uploaded Image" />
+                                <p><strong>Transcription:</strong> ${record.transcript}</p>
+                            `;
+                            historyDiv.appendChild(historyItem);
+                        });
+                    }
+                } else {
+                    historyDiv.innerHTML = `<p class="error">${result.error}</p>`;
+                }
+            } catch (error) {
+                historyDiv.innerHTML = `<p class="error">An error occurred: ${error.message}</p>`;
+            } finally {
+                loader.style.display = 'none';
+            }
         });
     </script>
 </body>

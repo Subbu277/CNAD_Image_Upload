@@ -29,9 +29,9 @@ def upload_to_gemini(path, image_name):
         txt_file.write(response.text)
 
     with open(txt_file_name, 'rb') as txt_file:
-        upload_file(txt_file, "text_files/"+txt_file_name)
+        txt_url=upload_file(txt_file, "text_files/"+txt_file_name)
 
     os.remove(txt_file_name)
 
-    return response.text
+    return response.text,txt_url
 
