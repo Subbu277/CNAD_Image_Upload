@@ -22,14 +22,13 @@ def upload_to_gemini(path, image_name):
     parts = [img, PROMPT]
     response = model.generate_content(parts)
     txt_file_name = image_name+".txt"
-    txt_file_path = os.path.join("tmp", txt_file_name)
-    with open(txt_file_path, 'w') as txt_file:
+    with open(txt_file_name, 'w') as txt_file:
         txt_file.write(response.text)
 
-    with open(txt_file_path, 'rb') as txt_file:
+    with open(txt_file_name, 'rb') as txt_file:
         upload_file(txt_file, "text_files/"+txt_file_name)
 
-    os.remove(txt_file_path)
+    os.remove(txt_file_name)
 
     return response.text
 
