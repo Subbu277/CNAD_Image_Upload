@@ -10,4 +10,7 @@ app.register_blueprint(ui_api)
 
 
 if __name__ == '__main__':
+    tmp_dir = "tmp"
+    if not os.path.exists(tmp_dir):
+        os.makedirs(tmp_dir)
     app.run(port=8080, debug=True)
