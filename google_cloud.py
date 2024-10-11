@@ -2,7 +2,7 @@ from google.cloud import storage
 import os
 import google.generativeai as genai
 
-api_key="AIzaSyDKPVGjK_69HwhUnMNg7_MBauYeXd78kAo"
+api_key = os.getenv('GENAPI_API_KEY')
 genai.configure(api_key=api_key)
 
 def bucket_connection(bucket_name):
