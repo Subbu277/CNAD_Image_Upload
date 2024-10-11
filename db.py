@@ -1,10 +1,9 @@
 import sqlite3
 import uuid
-import os
 
-db = sqlite3.connect("cnad.db", check_same_thread=False)
 
 def startDb():
+    db = sqlite3.connect("cnad.db")
     cursor = db.cursor()
     cursor.execute("PRAGMA foreign_keys = ON;")
     create_users_uploads(cursor)
@@ -27,6 +26,7 @@ def create_users_uploads(cursor):
 
 def add_user_uploads(data):
     user_id = str(uuid.uuid4())
+    db = sqlite3.connect("cnad.db")
     cursor = db.cursor()
     cursor.execute('''INSERT INTO user_upload (id, email, image, transcript, text_path)
                       VALUES (?, ?, ?, ?, ?)''',
@@ -34,6 +34,7 @@ def add_user_uploads(data):
     db.commit()
 
 def get_records_by_email(email):
+    db = sqlite3.connect("cnad.db")
     cursor = db.cursor()
     cursor.execute('''SELECT * FROM user_upload WHERE email = ?''', (email,))
     records = cursor.fetchall()
