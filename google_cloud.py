@@ -2,6 +2,9 @@ from google.cloud import storage
 import os
 import google.generativeai as genai
 
+api_key="AIzaSyDKPVGjK_69HwhUnMNg7_MBauYeXd78kAo"
+genai.configure(api_key=api_key)
+
 def bucket_connection(bucket_name):
     storage_client = storage.Client()
     return storage_client.bucket(bucket_name)
