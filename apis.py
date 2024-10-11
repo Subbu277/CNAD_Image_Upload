@@ -38,7 +38,10 @@ def upload():
 @health_api.route('/health', methods=['GET'])
 def health():
     time.sleep(5)
-    return jsonify({"message": "Server Health : Running"}), 200
+    if not os.path.exists("tmp"):
+        logger.info("Creating tmp directory")
+
+    return jsonify({"message": "Server Health : Running" +os.path.exists("tmp")}), 200
 
 @ui_api.route('/')
 def index():
