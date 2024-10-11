@@ -2,8 +2,8 @@ import time
 from datetime import datetime
 
 from flask import request, jsonify, Blueprint, send_from_directory
-
-from bucket import upload_image, bucket
+import os
+from google_cloud import upload_file,upload_to_gemini
 from helpers import allowed_file
 
 upload_api = Blueprint('upload', __name__)
@@ -22,8 +22,13 @@ def upload():
 
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     bucket_object_name = timestamp+'_'+image.filename
-    public_url = upload_image(bucket ,image, bucket_object_name)
-    return jsonify({"message": "Image uploaded successfully", "url": public_url}), 200
+    local_path = os.path.join("tmp", bucket_object_name)
+    image.save(local_path)
+    image.seek(0)
+    public_url = upload_file(image, "image_files/"+bucket_object_name)
+    text=upload_to_gemini(local_path,timestamp)
+    os.remove(local_path)
+    return jsonify({"message": "Image uploaded successfully ", "Transcription": text, "url": public_url}), 200
 
 
 @health_api.route('/health', methods=['GET'])

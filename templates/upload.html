@@ -18,7 +18,7 @@
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            position: relative; /* Add position relative for the loader positioning */
+            position: relative;
         }
         h1 {
             text-align: center;
@@ -64,24 +64,24 @@
             border-radius: 8px;
         }
         .loader {
-            border: 16px solid #f3f3f3; /* Light grey */
-            border-top: 16px solid #3498db; /* Blue */
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #3498db;
             border-radius: 50%;
             width: 60px;
             height: 60px;
             animation: spin 1s linear infinite;
-            position: absolute; /* Position the loader inside the container */
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            display: none; /* Initially hidden */
+            display: none;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
         .re-upload {
-            display: none; /* Initially hidden */
+            display: none;
             margin-top: 20px;
         }
     </style>
@@ -123,6 +123,11 @@
                     const img = document.createElement('img');
                     img.src = result.url;
                     messageDiv.appendChild(img);
+
+                    // Display the transcription
+                    const transcription = document.createElement('p');
+                    transcription.innerHTML = `<strong>Transcription:</strong> ${result.Transcription}`;
+                    messageDiv.appendChild(transcription);
 
                     // Show the re-upload button
                     reUploadButton.style.display = 'inline-block';
