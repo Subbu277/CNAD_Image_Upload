@@ -2,7 +2,6 @@ import sqlite3
 import uuid
 import os
 
-os.remove("cnad.db")
 db = sqlite3.connect("cnad.db", check_same_thread=False)
 
 def startDb():
