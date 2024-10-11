@@ -41,7 +41,7 @@ def health():
     if not os.path.exists("tmp"):
         logger.info("Creating tmp directory")
 
-    return jsonify({"message": "Server Health : FUCK Running" +os.path.exists("tmp")}), 200
+    return jsonify({"message": "Server Health : FUCK Running" + str(os.path.exists("tmp"))}), 200
 
 @ui_api.route('/')
 def index():
