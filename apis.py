@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-
+import logging
 from flask import request, jsonify, Blueprint, send_from_directory
 import os
 from google_cloud import upload_file,upload_to_gemini
@@ -10,6 +10,8 @@ upload_api = Blueprint('upload', __name__)
 health_api = Blueprint('health', __name__)
 ui_api = Blueprint('ui', __name__)
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 @upload_api.route('/upload', methods=['POST'])
 def upload():
     if 'image' not in request.files:
@@ -23,8 +25,8 @@ def upload():
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     bucket_object_name = timestamp+'_'+image.filename
     local_path = os.path.join("tmp", bucket_object_name)
-    print("-------------3 : image path",local_path)
-    print("---------------4 : dir exist or not",os.path.exists("tmp_dir"))
+    logger.info("-------------3 : image path"+local_path)
+    logger.info("---------------4 : dir exist or not"+os.path.exists("tmp_dir"))
     image.save(local_path)
     image.seek(0)
     public_url = upload_file(image, "image_files/"+bucket_object_name)
