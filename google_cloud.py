@@ -9,7 +9,7 @@ def bucket_connection(bucket_name):
     storage_client = storage.Client()
     return storage_client.bucket(bucket_name)
 
-bucket_name = "cnad_image_uploads"
+bucket_name = "cnad_image_text_uploads"
 bucket_connection = bucket_connection(bucket_name)
 
 def upload_file(file, bucket_object_name):
