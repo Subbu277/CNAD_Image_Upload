@@ -1,0 +1,67 @@
+# Python bytecode files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Distribution / Packaging
+.Python
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+sdist/
+var/
+*.egg
+*.egg-info/
+.installed.cfg
+*.log
+*.json
+
+# Flask specific
+instance/
+.webassets-cache/
+
+# PyCharm project files
+.idea/
+
+# VS Code settings
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Virtual environment directories
+venv/
+env.json/
+env.json/
+.venv/
+.env/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# pytest
+.cache/
+
+# Coverage reports
+.coverage
+.coverage.*
+*.coveragerc
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# pytype
+.pytype/
+
+# Sphinx documentation
+docs/_build/

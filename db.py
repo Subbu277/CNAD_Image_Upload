@@ -1,61 +1,90 @@
-import sqlite3
 import uuid
 import os
+import sqlalchemy
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import text
 
 
-def startDb():
-    db_file = "cnad.db"
+def connect_tcp_socket() -> sqlalchemy.engine.base.Engine:
+    db_host = os.environ["INSTANCE_HOST"]
+    db_user = os.environ["DB_USER"]
+    db_pass = os.environ["DB_PASS"]
+    db_name = os.environ["DB_NAME"]
+    db_port = os.environ["DB_PORT"]
 
-    if os.path.exists(db_file):
-        os.remove(db_file)
+    pool = sqlalchemy.create_engine(
+        sqlalchemy.engine.url.URL.create(
+            drivername="mysql+pymysql",
+            username=db_user,
+            password=db_pass,
+            host=db_host,
+            port=db_port,
+            database=db_name,
+        ),
+    )
+    return pool
 
-    db = sqlite3.connect(db_file)
-    cursor = db.cursor()
-    cursor.execute("PRAGMA foreign_keys = ON;")
+def add_user_upload_record(data) -> None:
+    engine = connect_tcp_socket()
 
-    create_users_uploads(cursor)
-    db.commit()
-    db.close()
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
-def create_users_uploads(cursor):
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user_upload'")
-    table_exists = cursor.fetchone()
+    try:
+        insert_query = text("""
+            INSERT INTO user_upload (id, email, image, transcript, text_path)
+            VALUES (:id, :email, :image, :transcript, :text_path)
+        """)
 
-    if table_exists:
-        cursor.execute("DROP TABLE user_upload")
+        session.execute(insert_query, {
+            'id': str(uuid.uuid4()),
+            'email': data['email'],
+            'image': data['image_path'],
+            'transcript': data['transcript'],
+            'text_path': data['text_path']
+        })
 
-    cursor.execute('''CREATE TABLE user_upload (
-        id TEXT PRIMARY KEY,
-        email TEXT,
-        image TEXT,
-        transcript TEXT,
-        text_path TEXT
-    )''')
+        session.commit()
 
-def add_user_uploads(data):
-    user_id = str(uuid.uuid4())
-    db = sqlite3.connect("cnad.db")
-    cursor = db.cursor()
-    cursor.execute('''INSERT INTO user_upload (id, email, image, transcript, text_path)
-                      VALUES (?, ?, ?, ?, ?)''',
-                   (user_id, data['email'], data['image_path'], data['transcript'], data['text_path']))
-    db.commit()
-    db.close()
+    except Exception as e:
+        session.rollback()
+        print(f"An error occurred while adding record: {e}")
 
-def get_records_by_email(email):
-    db = sqlite3.connect("cnad.db")
-    cursor = db.cursor()
-    cursor.execute('''SELECT * FROM user_upload WHERE email = ?''', (email,))
-    records = cursor.fetchall()
-    db.close()
+    finally:
+        session.close()
 
-    records_list = []
-    for record in records:
-        records_list.append({
-            'id':record[0],
-            'email':record[1],
-            'image_path':record[2],
-            'transcript':record[3],
-            'text_path':record[4]})
+def fetch_user_uploads_by_email(email: str):
+    engine = connect_tcp_socket()
 
-    return records_list
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    try:
+        select_query = text("""
+            SELECT id, email, image, transcript, text_path
+            FROM user_upload
+            WHERE email = :email
+        """)
+
+        results = session.execute(select_query, {'email': email}).fetchall()
+
+        if results:
+            return [
+                {
+                    'id': result[0],
+                    'email': result[1],
+                    'image': result[2],
+                    'transcript': result[3],
+                    'text_path': result[4]
+                }
+                for result in results
+            ]
+        else:
+            return []
+
+    except Exception as e:
+        print(f"An error occurred while fetching records: {e}")
+        return []
+
+    finally:
+        session.close()
