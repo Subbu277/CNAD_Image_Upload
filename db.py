@@ -38,7 +38,7 @@ def add_user_upload_record(data) -> None:
 
         session.execute(insert_query, {
             'id': str(uuid.uuid4()),
-            'email': data['email'],
+            'email': data['email'].lower(),
             'image': data['image_path'],
             'transcript': data['transcript'],
             'text_path': data['text_path']
@@ -66,7 +66,7 @@ def fetch_user_uploads_by_email(email: str):
             WHERE email = :email
         """)
 
-        results = session.execute(select_query, {'email': email}).fetchall()
+        results = session.execute(select_query, {'email': email.lower()}).fetchall()
 
         if results:
             return [
