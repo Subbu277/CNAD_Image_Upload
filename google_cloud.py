@@ -29,17 +29,34 @@ def download_file(bucket_object_name, destination_file_path):
 model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 PROMPT = 'describe the image in 100 words'
 
+import logging
+
 def upload_to_gemini(path, dir):
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+
+    # Add a handler to log to Google Cloud Run logs
+    handler = logging.StreamHandler()
+    logger.addHandler(handler)
+
+    logger.info(f"Uploading file: {path}")
+    logger.info(f"Target directory: {dir}")
+
     img = genai.upload_file(path)
     parts = [img, PROMPT]
     response = model.generate_content(parts)
-    image_name=path.split(".")[0]
-    txt_file_name = image_name +".txt"
+
+    image_name = path.split(".")[0]
+    txt_file_name = image_name + ".txt"
+
     with open(txt_file_name, 'w') as txt_file:
         txt_file.write(response.text)
 
     with open(txt_file_name, 'rb') as txt_file:
-        upload_file(txt_file, dir+"/"+txt_file_name)
+        upload_file(txt_file, dir + "/" + txt_file_name)
+
     os.remove(txt_file_name)
-    return response.text,txt_file_name
+    logger.info(f"Uploaded text file: {txt_file_name}")
+
+    return response.text, txt_file_name
 
