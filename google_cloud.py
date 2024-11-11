@@ -30,21 +30,20 @@ model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 PROMPT = 'describe the image in 100 words'
 
 def upload_to_gemini(path, dir):
-    #img = genai.upload_file(path)
-    #parts = [img, PROMPT]
-    #response = model.generate_content(parts)
+    img = genai.upload_file(path)
+    parts = [img, PROMPT]
+    response = model.generate_content(parts)
 
     image_name = path.split(".")[0]
     txt_file_name = image_name + ".txt"
 
     with open(txt_file_name, 'w') as txt_file:
-        #txt_file.write(response.text)
-        txt_file.write("This test is describe")
+        txt_file.write(response.text)
 
     with open(txt_file_name, 'rb') as txt_file:
         upload_file(txt_file, dir + "/" + txt_file_name)
 
     os.remove(txt_file_name)
 
-    return "This test is describe", txt_file_name
+    return response.text, txt_file_name
 
