@@ -144,7 +144,7 @@
 
                     // Create and display the image
                     const img = document.createElement('img');
-                    img.src = result.result.image_path; // Use the image path returned by the API
+                    img.src = result.result.image;
                     messageDiv.appendChild(img);
 
                     // Display transcription
@@ -198,7 +198,7 @@
                             const historyItem = document.createElement('div');
                             historyItem.className = 'history-item';
                             historyItem.innerHTML = `
-                                <img src="${record.image_path}" alt="Uploaded Image" />
+                                <img src="${record.image}" alt="Uploaded Image" />
                                 <p><strong>Transcription:</strong> ${record.transcript}</p>
                             `;
                             historyDiv.appendChild(historyItem);

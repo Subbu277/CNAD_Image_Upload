@@ -1,3 +1,5 @@
+import base64
+
 from google.cloud import storage
 import os
 import google.generativeai as genai
@@ -17,6 +19,13 @@ def upload_file(file, bucket_object_name):
     blob.upload_from_file(file)
     return blob.public_url
 
+def download_file(bucket_object_name, destination_file_path):
+    blob = bucket_connection.blob(bucket_object_name)
+    blob.download_to_filename(destination_file_path)
+    with open(destination_file_path, "rb") as img_file:
+        encoded_image = base64.b64encode(img_file.read()).decode('utf-8')
+    return f"data:image/{destination_file_path};base64,{encoded_image}",
+
 model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 PROMPT = 'describe the image in 100 words'
 
@@ -30,7 +39,7 @@ def upload_to_gemini(path, dir):
         txt_file.write(response.text)
 
     with open(txt_file_name, 'rb') as txt_file:
-        txt_url=upload_file(txt_file, dir+"/"+txt_file_name)
+        upload_file(txt_file, dir+"/"+txt_file_name)
     os.remove(txt_file_name)
-    return response.text,txt_url
+    return response.text,txt_file_name
 

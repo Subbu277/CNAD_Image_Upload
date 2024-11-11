@@ -1,3 +1,4 @@
+import base64
 import time
 from datetime import datetime
 from flask import request, jsonify, Blueprint, send_from_directory
@@ -30,16 +31,25 @@ def upload():
     image.seek(0)
     public_url = upload_file(image, timestamp+"/" + local_path)
     text, txt_url = upload_to_gemini(local_path, timestamp)
-    os.remove(local_path)
 
     data = {
         'email':user_email,
-        'image_path':public_url,
+        'image_path':timestamp+"/" + local_path,
         'transcript':text,
-        'text_path':txt_url
+        'text_path':timestamp+"/"+txt_url
     }
     add_user_upload_record(data)
-    return jsonify({"result": data}), 200
+
+    with open(local_path, "rb") as img_file:
+        encoded_image = base64.b64encode(img_file.read()).decode('utf-8')
+
+    response = {
+        'image': f"data:image/{image.mimetype.split('/')[1]};base64,{encoded_image}",
+        'transcript': text,
+    }
+
+    os.remove(local_path)
+    return jsonify({"result": response}), 200
 
 
 @upload_api.route('/uploads', methods=['GET'])

@@ -59,6 +59,7 @@ env.json/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+temp.png
 
 # pytype
 .pytype/

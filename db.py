@@ -3,6 +3,7 @@ import os
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import text
+from google_cloud import  download_file
 
 
 def connect_tcp_socket() -> sqlalchemy.engine.base.Engine:
@@ -64,24 +65,15 @@ def fetch_user_uploads_by_email(email: str):
             SELECT id, email, image, transcript, text_path
             FROM user_upload
             WHERE email = :email
+            order by created_on desc
         """)
 
         results = session.execute(select_query, {'email': email.lower()}).fetchall()
-
-        if results:
-            return [
-                {
-                    'id': result[0],
-                    'email': result[1],
-                    'image': result[2],
-                    'transcript': result[3],
-                    'text_path': result[4]
-                }
-                for result in results
-            ]
-        else:
-            return []
-
+        list = []
+        for result in results:
+               encode_image = download_file(result[2],"temp.png")
+               list.append({'image': encode_image[0],'transcript': result[3]})
+        return list
     except Exception as e:
         print(f"An error occurred while fetching records: {e}")
         return []
