@@ -43,7 +43,10 @@ def upload_to_gemini(path, dir):
     logger.info(f"Target directory: {dir}")
 
     img = genai.upload_file(path)
+
+    logger.info(f"img: {img}")
     parts = [img, PROMPT]
+    logger.info(f"img: {parts}")
     response = model.generate_content(parts)
 
     image_name = path.split(".")[0]
