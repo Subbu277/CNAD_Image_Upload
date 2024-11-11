@@ -29,40 +29,22 @@ def download_file(bucket_object_name, destination_file_path):
 model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 PROMPT = 'describe the image in 100 words'
 
-import logging
-
 def upload_to_gemini(path, dir):
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-
-    # Add a handler to log to Google Cloud Run logs
-    handler = logging.StreamHandler()
-    logger.addHandler(handler)
-
-    if not os.path.isfile(path):
-        logger.error(f"File not found: {path}")
-        raise FileNotFoundError(f"File '{path}' does not exist.")
-    else:
-         logger.error(f"File found: {path}")
-
-    img = genai.upload_file(path)
-
-    logger.info(f"img: {img}")
-    parts = [img, PROMPT]
-    logger.info(f"img: {parts}")
-    response = model.generate_content(parts)
+    #img = genai.upload_file(path)
+    #parts = [img, PROMPT]
+    #response = model.generate_content(parts)
 
     image_name = path.split(".")[0]
     txt_file_name = image_name + ".txt"
 
     with open(txt_file_name, 'w') as txt_file:
-        txt_file.write(response.text)
+        #txt_file.write(response.text)
+        txt_file.write("This test is describe")
 
     with open(txt_file_name, 'rb') as txt_file:
         upload_file(txt_file, dir + "/" + txt_file_name)
 
     os.remove(txt_file_name)
-    logger.info(f"Uploaded text file: {txt_file_name}")
 
-    return response.text, txt_file_name
+    return "This test is describe", txt_file_name
 
