@@ -39,8 +39,11 @@ def upload_to_gemini(path, dir):
     handler = logging.StreamHandler()
     logger.addHandler(handler)
 
-    logger.info(f"Uploading file: {path}")
-    logger.info(f"Target directory: {dir}")
+    if not os.path.isfile(path):
+        logger.error(f"File not found: {path}")
+        raise FileNotFoundError(f"File '{path}' does not exist.")
+    else:
+         logger.error(f"File found: {path}")
 
     img = genai.upload_file(path)
 
