@@ -13,43 +13,63 @@ ui_api = Blueprint('ui', __name__)
 
 @upload_api.route('/upload', methods=['POST'])
 def upload():
-    if 'image' not in request.files:
-        return jsonify({"error": "No file part in the request"}), 400
+    try:
+        if 'image' not in request.files:
+            return jsonify({"error": "No file part in the request"}), 400
 
-    image = request.files['image']
+        image = request.files['image']
 
-    if not allowed_file(image.filename):
-        return jsonify({"error": "Uploaded file is not an allowed image type"}), 400
+        if not allowed_file(image.filename):
+            return jsonify({"error": "Uploaded file is not an allowed image type"}), 400
 
-    user_email = request.form.get('email')
-    if not user_email:
-        return jsonify({"error": "No email provided"}), 400
+        user_email = request.form.get('email')
+        if not user_email:
+            return jsonify({"error": "No email provided"}), 400
 
-    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    local_path = image.filename
-    image.save(local_path)
-    image.seek(0)
-    public_url = upload_file(image, timestamp+"/" + local_path)
-    text, txt_url = upload_to_gemini(local_path, timestamp)
+        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        local_path = f"temp_{timestamp}_{image.filename}"
+        image.save(local_path)
+        image.seek(0)
 
-    data = {
-        'email':user_email,
-        'image_path':timestamp+"/" + local_path,
-        'transcript':text,
-        'text_path':timestamp+"/"+txt_url
-    }
-    add_user_upload_record(data)
+        try:
+            upload_file(image, f"{timestamp}/{local_path}")
+        except Exception as e:
+            os.remove(local_path)
+            return jsonify({"error": f"Failed to upload image"}), 500
 
-    with open(local_path, "rb") as img_file:
-        encoded_image = base64.b64encode(img_file.read()).decode('utf-8')
+        try:
+            text, txt_url = upload_to_gemini(local_path, timestamp)
+        except Exception as e:
+            os.remove(local_path)
+            return jsonify({"error": f"Failed to upload transcript"}), 500
 
-    response = {
-        'image': f"data:image/{image.mimetype.split('/')[1]};base64,{encoded_image}",
-        'transcript': text,
-    }
+        data = {
+            'email': user_email,
+            'image_path': f"{timestamp}/{local_path}",
+            'transcript': text,
+            'text_path': f"{timestamp}/{txt_url}"
+        }
+        try:
+            add_user_upload_record(data)
+        except Exception as e:
+            os.remove(local_path)
+            return jsonify({"error": f"Failed to save record"}), 500
 
-    os.remove(local_path)
-    return jsonify({"result": response}), 200
+        with open(local_path, "rb") as img_file:
+            encoded_image = base64.b64encode(img_file.read()).decode('utf-8')
+
+        response = {
+            'image': f"data:image/{image.mimetype.split('/')[1]};base64,{encoded_image}",
+            'transcript': text,
+        }
+
+        # Clean up the temporary file
+        os.remove(local_path)
+
+        return jsonify({"result": response}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
 
 @upload_api.route('/uploads', methods=['GET'])

@@ -2,6 +2,7 @@ import base64
 
 from google.cloud import storage
 import os
+from PIL import Image
 import google.generativeai as genai
 
 api_key = os.getenv('GENAPI_API_KEY')
@@ -30,9 +31,10 @@ model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 PROMPT = 'describe the image in 100 words'
 
 def upload_to_gemini(path, dir):
-    img = genai.upload_file(path)
-    parts = [img, PROMPT]
-    response = model.generate_content(parts)
+    img = Image.open(path)
+    parts = [PROMPT,img]
+    response = model.generate_content(parts,stream=True)
+    response.resolve()
 
     image_name = path.split(".")[0]
     txt_file_name = image_name + ".txt"
